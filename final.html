@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You</title>
+    <link rel="stylesheet" href="./css/final.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <span><img src="./images/logo.png" alt="logo" /></span>
+        </div>
+        <div class="title">
+            <h1>Sinhgad</h1>
+            <h2>TECHTONIC 2K26</h2>
+        </div>
+    </header>    
+
+    <!-- Hero -->
+    <div class="hero">
+        <div class="tech-lines">
+            <div class="tech-line"></div>
+            <div class="tech-line"></div>
+            <div class="tech-line"></div>
+        </div>
+        <div class="hero-content">
+            <h2>Bamboozled</h2>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="final-content">
+            <h1 class="thank-you">Thank You for Playing!</h1>
+            <p class="description">Results will be declared soon. Stay tuned!</p>
+
+            <!-- Player Name -->
+            <h3 id="playerNameDisplay"></h3>
+
+            <div class="feedback-box">
+                <h3>Hope you enjoyed playing Bamboozled!</h3>
+                <h3>We would love to see you again 💙</h3>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <button class="userinfo">Logout</button>
+        <button class="event-pictures-btn">Event Pictures</button>
+        <button class="coordinators-btn">Coordinators</button>
+
+        <!-- Event Pictures Modal -->
+        <div id="picturesModal">
+            <div class="pictures-container">
+                <h2>Event Gallery</h2>
+                <img id="galleryImage" class="gallery-image" src="" alt="Event Picture">
+
+                <div class="gallery-navigation">
+                    <button id="prevBtn">Previous</button>
+                    <button id="nextBtn">Next</button>
+                </div>
+
+                <button id="closeGalleryBtn">Close</button>
+            </div>
+        </div>
+
+        <!-- Coordinators Modal -->
+        <div id="coordinatorsModal">
+            <div class="coordinators-container">
+                <h2>Event Coordinators</h2>
+                <div class="coordinators-list">
+                    <div class="coordinator-item">Karan Agrawal</div>
+                    <div class="coordinator-item">Shruti Borkar</div>
+                </div>
+                <button class="close-coordinators">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/final.js"></script>
+</body>
+</html>

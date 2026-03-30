@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bamboozled Registration - TECHTONIC 2K26</title>
+
+  <link rel="stylesheet" href="./css/from.css">
+  <link rel="stylesheet" href="./css/login.css">
+</head>
+
+<body>
+
+<header>
+  <div class="logo">
+    <span><img src="./images/logo.png" alt="logo" /></span>
+  </div>
+  <div class="title">
+    <h1>Sinhgad</h1>
+    <h2>TECHTONIC 2K26</h2>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="tech-lines">
+    <div class="tech-line"></div>
+    <div class="tech-line"></div>
+    <div class="tech-line"></div>
+  </div>
+  <div class="hero-content">
+    <h2>Bamboozled</h2>
+  </div>
+</div>
+
+<div class="container">
+  <h1 class="form-title">Registration</h1>
+
+  <!-- ❌ removed backend action -->
+  <form id="registrationForm">
+
+    <div class="form-group">
+      <label class="label">Player Name</label>
+      <input type="text" id="playerName" placeholder="Enter your full name" required>
+      <div id="playerNameError" class="error-message">Invalid name</div>
+    </div>
+
+    <div class="form-group">
+      <label class="label">Contact Number</label>
+      <input type="tel" id="contactNumber" placeholder="Enter 10-digit mobile number" required>
+      <div id="contactNumberError" class="error-message">Invalid number</div>
+    </div>
+
+    <div class="form-group">
+      <label class="label">Email Address</label>
+      <input type="email" id="emailAddress" placeholder="Enter your email" required>
+      <div id="emailAddressError" class="error-message">Invalid email</div>
+    </div>
+
+    <div class="form-group">
+      <label class="label">College Name</label>
+      <select id="college" required>
+        <option value="">Select College</option>
+        <option value="sinhgad">Sinhgad Institute</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+
+    <div id="otherCollegeGroup" class="form-group" style="display:none;">
+      <label class="label">Other College</label>
+      <input type="text" id="otherCollegeName">
+    </div>
+
+    <button type="submit">Register</button>
+
+  </form>
+
+  <!-- ✅ fixed -->
+  <div class="login-links">
+    <a href="login.html" class="form-link">Already registered? Login</a>
+  </div>
+
+</div>
+
+<script src="./js/from.js"></script>
+
+<script>
+document.getElementById("registrationForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const name = document.getElementById("playerName").value.trim();
+    const phone = document.getElementById("contactNumber").value.trim();
+    const email = document.getElementById("emailAddress").value.trim();
+    const college = document.getElementById("college").value;
+    const otherCollege = document.getElementById("otherCollegeName").value.trim();
+
+    let isValid = true;
+
+    if (!/^[A-Za-z\s]{3,50}$/.test(name)) {
+        alert("Invalid name");
+        isValid = false;
+    }
+
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+        alert("Invalid phone number");
+        isValid = false;
+    }
+
+    if (!email.includes("@")) {
+        alert("Invalid email");
+        isValid = false;
+    }
+
+    if (college === "") {
+        alert("Select college");
+        isValid = false;
+    }
+
+    if (college === "other" && otherCollege === "") {
+        alert("Enter college name");
+        isValid = false;
+    }
+
+    if (!isValid) return;
+
+    // ✅ SAVE DATA (frontend only)
+    localStorage.setItem("playername", name);
+    localStorage.setItem("playerphone", phone);
+    localStorage.setItem("playeremail", email);
+    localStorage.setItem("college", college === "other" ? otherCollege : college);
+
+    // ✅ redirect
+    window.location.href = "bamboozled-game-simplified.html";
+});
+</script>
+
+</body>
+</html>
