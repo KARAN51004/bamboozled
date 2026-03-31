@@ -117,7 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
     logoutButton.addEventListener("click", () => {
       localStorage.clear();
       alert("Logged out successfully");
-      window.location.href = "dashboard.html"; // change if needed
+      window.location.href = "index.html"; // change if needed
     });
   }
 
