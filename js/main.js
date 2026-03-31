@@ -291,144 +291,162 @@ const equationProblems = [
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    const name = localStorage.getItem("playername");
-    if (name) {
-        document.getElementById("playerName").innerText = name;
-    }
+    // ================= PLAYER =================
+    const name = localStorage.getItem("playername") || "Guest";
+    const mobile = localStorage.getItem("playerMobile") || "Not Provided";
+
+    const playerNameEl = document.getElementById("playerName");
+    if (playerNameEl) playerNameEl.innerText = name;
 
     const inputField = document.getElementById("modifiedInput");
+
     let currentLevel = 1;
-    let timeLeft = 900;
+    let timeLeft = 40;
     let completedtime = timeLeft;
     let downloadAttempted = false;
 
+    // ================= RANDOM =================
     function getRandomItem(arr) {
         return arr[Math.floor(Math.random() * arr.length)];
     }
 
     const correctClue = getRandomItem(equationProblems);
 
-// Generate 4 fake clues
-const fakeClues = generateFakeClues(correctClue);
+    function generateFakeClues(correctClue) {
+        let fakeClues = [];
+        let usedIds = new Set([correctClue.id]);
 
-// Combine and shuffle
-let allClues = [correctClue, ...fakeClues];
+        while (fakeClues.length < 4) {
+            let randomClue = getRandomItem(equationProblems);
+            if (!usedIds.has(randomClue.id)) {
+                usedIds.add(randomClue.id);
+                fakeClues.push({
+                    ...randomClue,
+                    answer: randomClue.answer + Math.floor(Math.random() * 3) + 1,
+                    isFake: true
+                });
+            }
+        }
+        return fakeClues;
+    }
 
-allClues.sort(() => Math.random() - 0.5); // shuffle
+    const fakeClues = generateFakeClues(correctClue);
+    let allClues = [correctClue, ...fakeClues].sort(() => Math.random() - 0.5);
 
     const randomParagraphProblem = getRandomItem(paragraphProblems);
 
-    const problemContainer = document.getElementById('problemContainer');
-    problemContainer.innerHTML = '';
+    // ================= CLUE-BASED CAESAR MAPPING =================
+    function generateMappingFromClue(clueValue) {
+        const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const lower = "abcdefghijklmnopqrstuvwxyz";
+        const mapping = {};
 
-allClues.forEach((clue, index) => {
-    const clueCard = document.createElement('div');
-    clueCard.className = 'problem-card';
-
-    clueCard.innerHTML = `
-        <h3>Clue ${index + 1}</h3>
-        <p>${clue.title}</p>
-        <p>${clue.description}</p>
-        <p><strong>${clue.example}</strong></p>
-    `;
-
-    problemContainer.appendChild(clueCard);
-});
-
-    const paragraphCard = document.createElement('div');
-    paragraphCard.className = 'problem-card';
-    paragraphCard.innerHTML = `
-        <h3>${randomParagraphProblem.title}</h3>
-        <p>${randomParagraphProblem.description}</p>
-    `;
-    problemContainer.appendChild(paragraphCard);
-
-    const ASCII_SHIFT = correctClue.answer;
-
-    function transformCharacter(char, level) {
-        if (level === 1) {
-            if (/[a-zA-Z]/.test(char)) {
-                return String.fromCharCode(char.charCodeAt(0) + ASCII_SHIFT);
-            }
-        } else {
-            return String.fromCharCode(char.charCodeAt(0) + ASCII_SHIFT);
+        // shift uppercase letters
+        for (let i = 0; i < upper.length; i++) {
+            mapping[upper[i]] = upper[(i + clueValue) % 26];
         }
-        return char;
+
+        // shift lowercase letters
+        for (let i = 0; i < lower.length; i++) {
+            mapping[lower[i]] = lower[(i + clueValue) % 26];
+        }
+
+        return mapping;
     }
 
-    // ================= TYPING SOUND =================
+    let currentMapping = generateMappingFromClue(correctClue.answer);
+
+    function transformCharacter(char) {
+        return currentMapping[char] || char; // only letters get transformed
+    }
+
+    // ================= RENDER =================
+    const problemContainer = document.getElementById('problemContainer');
+    if (problemContainer) {
+        problemContainer.innerHTML = '';
+
+        allClues.forEach((clue, index) => {
+            const clueCard = document.createElement('div');
+            clueCard.className = 'problem-card';
+            clueCard.innerHTML = `
+                <h3>Clue ${index + 1}</h3>
+                <p>${clue.title}</p>
+                <p>${clue.description}</p>
+                <p><strong>${clue.example || ""}</strong></p>
+            `;
+            problemContainer.appendChild(clueCard);
+        });
+
+        const paragraphCard = document.createElement('div');
+        paragraphCard.className = 'problem-card';
+        paragraphCard.innerHTML = `
+            <h3>${randomParagraphProblem.title}</h3>
+            <p>${randomParagraphProblem.description}</p>
+        `;
+        problemContainer.appendChild(paragraphCard);
+    }
+
+    // ================= TYPING =================
     inputField.addEventListener("keypress", function (event) {
         event.preventDefault();
 
-        typingSound.currentTime = 0;
-        typingSound.play();
+        if (typeof typingSound !== "undefined") {
+            typingSound.currentTime = 0;
+            typingSound.play();
+        }
 
-        let transformedChar = transformCharacter(event.key, currentLevel);
+        let transformedChar = transformCharacter(event.key);
         this.value += transformedChar;
     });
 
     // ================= TIMER =================
     function updateTimer() {
+        const timerElement = document.getElementById("timer");
+
         let minutes = Math.floor(timeLeft / 60);
         let seconds = timeLeft % 60;
 
-        const timerElement = document.getElementById("timer");
+        if (timerElement) {
+            timerElement.innerText =
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-        timerElement.innerText =
-            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
-        // 🔴 TURN RED LAST 30 SEC
-        if (timeLeft <= 30) {
-            timerElement.style.color = "red";
-            timerElement.style.fontWeight = "bold";
+            if (timeLeft <= 30) {
+                timerElement.style.color = "red";
+                timerElement.style.fontWeight = "bold";
+            }
         }
 
-        // 🔊 BEEP LAST 10 SEC
-        if (timeLeft <= 10 && timeLeft > 0) {
+        if (timeLeft <= 10 && timeLeft > 0 && typeof beepSound !== "undefined") {
             beepSound.currentTime = 0;
             beepSound.play();
         }
 
-        if (timeLeft === 0) {
+        if (timeLeft <= 0) {
             disableInputAndDownload();
             window.location.href = "final.html";
-        } else {
-            timeLeft--;
-            setTimeout(updateTimer, 1000);
+            return;
         }
+
+        timeLeft--;
+        setTimeout(updateTimer, 1000);
     }
 
     updateTimer();
-// fake clue genertaion 
-function generateFakeClues(correctClue) {
-    let fakeClues = [];
-
-    while (fakeClues.length < 4) {
-        let randomClue = getRandomItem(equationProblems);
-
-        if (randomClue.id !== correctClue.id) {
-            fakeClues.push({
-                ...randomClue,
-                answer: randomClue.answer + Math.floor(Math.random() * 3) + 1,
-                isFake: true
-            });
-        }
-    }
-
-    return fakeClues;
-}
 
     // ================= DOWNLOAD =================
     function disableInputAndDownload() {
-        inputField.disabled = true;
-        document.getElementById("downloadBtn").disabled = true;
+        if (inputField) inputField.disabled = true;
+
+        const downloadBtn = document.getElementById("downloadBtn");
+        if (downloadBtn) downloadBtn.disabled = true;
+
         createFile();
-        inputField.value = "Wait till time is up!";
     }
 
     function handleDownload() {
         if (timeLeft > 0 && !downloadAttempted) {
             let userChoice = confirm("Download early?\nOK = Retry\nCancel = Finish");
+
             if (!userChoice) {
                 downloadAttempted = true;
                 disableInputAndDownload();
@@ -437,67 +455,57 @@ function generateFakeClues(correctClue) {
         }
         createFile();
     }
-function createFile() {
-    let transformedText = inputField.value;
-    let fileType = document.getElementById("fileType").value;
 
-    let playerName = localStorage.getItem("playername") || "Unknown";
-    let playerMobile = localStorage.getItem("playerMobile") || "Not Provided";
+    function createFile() {
+        let transformedText = inputField.value;
+        let fileType = document.getElementById("fileType").value || "txt";
 
-    let filename = playerName + "." + fileType;
+        let filename = name + "." + fileType;
 
-    let elapsedTime = completedtime - timeLeft;
-    let minutes = Math.floor(elapsedTime / 60);
-    let seconds = elapsedTime % 60;
+        let elapsedTime = completedtime - timeLeft;
+        let minutes = Math.floor(elapsedTime / 60);
+        let seconds = elapsedTime % 60;
 
-    // ✅ Get paragraph shown to user
-    let paragraphGiven = randomParagraphProblem.description;
-
-    // ✅ Get equation clue also (optional but useful)
-    let equationClue = correctClue.title + " | " + correctClue.description;
-
-    let content = `
+        let content = `
 ===== PLAYER DETAILS =====
-Name: ${playerName}
-Mobile: ${playerMobile}
+Name: ${name}
+Mobile: ${mobile}
 
 ===== GAME DATA =====
 Time Taken: ${minutes}:${seconds}
 
 ----- Paragraph Given -----
-${paragraphGiven}
+${randomParagraphProblem.description}
 
------ Clue Given -----
-${equationClue}
+----- Correct Clue -----
+${correctClue.title} | ${correctClue.description}
 
------ User Typed Output -----
+----- User Output -----
 ${transformedText}
 `;
 
-    let blob = new Blob([content], { type: "text/plain" });
+        let blob = new Blob([content], { type: "text/plain" });
 
-    let link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-}
+        let link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+    }
 
+    const downloadBtn = document.getElementById("downloadBtn");
+    if (downloadBtn) {
+        downloadBtn.addEventListener("click", handleDownload);
+    }
 
-    document.getElementById("downloadBtn").addEventListener("click", handleDownload);
-
-    // ================= BLOCK CHEATING =================
+    // ================= ANTI-CHEAT =================
     document.addEventListener("keydown", function (e) {
-    // Block F5
-    if (e.key === "F5") {
-        e.preventDefault();
-    }
+        if (e.key === "F5" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r")) {
+            e.preventDefault();
+        }
+    });
 
-    // Block Ctrl+R / Cmd+R
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r") {
-        e.preventDefault();
-    }
-});
     document.addEventListener("copy", e => e.preventDefault());
     document.addEventListener("paste", e => e.preventDefault());
     document.addEventListener("contextmenu", e => e.preventDefault());
+
 });
