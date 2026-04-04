@@ -327,6 +327,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     answer: randomClue.answer + Math.floor(Math.random() * 3) + 1,
                     isFake: true
                 });
+            } else {
+                break; // prevent infinite loop if only 1 item exists
             }
         }
         return fakeClues;
@@ -364,18 +366,56 @@ document.addEventListener("DOMContentLoaded", function () {
         problemContainer.appendChild(paragraphCard);
     }
 
+    // ================= SYMBOL SHUFFLE =================
+    const symbols = "!@#$%^&*()_+-=[]{}|;:',.<>?/`~";
+
+    function shuffleString(str) {
+        return str.split("").sort(() => Math.random() - 0.5).join("");
+    }
+
+    const shuffledSymbols = shuffleString(symbols);
+
+    let symbolMap = {};
+    for (let i = 0; i < symbols.length; i++) {
+        symbolMap[symbols[i]] = shuffledSymbols[i];
+    }
+
     // ================= TRANSFORM =================
     const ASCII_SHIFT = correctClue.answer;
 
     function transformCharacter(char) {
-        if (/[a-zA-Z]/.test(char) || currentLevel !== 1) {
-            return String.fromCharCode(char.charCodeAt(0) + ASCII_SHIFT);
+
+        // Lowercase
+        if (/[a-z]/.test(char)) {
+            return String.fromCharCode(
+                ((char.charCodeAt(0) - 97 + ASCII_SHIFT) % 26) + 97
+            );
         }
+
+        // Uppercase
+        if (/[A-Z]/.test(char)) {
+            return String.fromCharCode(
+                ((char.charCodeAt(0) - 65 + ASCII_SHIFT) % 26) + 65
+            );
+        }
+
+        // Numbers
+        if (/[0-9]/.test(char)) {
+            return String.fromCharCode(
+                ((char.charCodeAt(0) - 48 + ASCII_SHIFT) % 10) + 48
+            );
+        }
+
+        // Symbols
+        if (symbolMap[char]) {
+            return symbolMap[char];
+        }
+
         return char;
     }
 
-    // ================= TYPING =================
-    inputField.addEventListener("keypress", function (event) {
+    // ================= TYPING FIX =================
+    inputField.addEventListener("keydown", function (event) {
         event.preventDefault();
 
         if (typeof typingSound !== "undefined") {
@@ -383,8 +423,27 @@ document.addEventListener("DOMContentLoaded", function () {
             typingSound.play();
         }
 
-        let transformedChar = transformCharacter(event.key);
-        this.value += transformedChar;
+        let key = event.key;
+
+        if (key === "Backspace") {
+            this.value = this.value.slice(0, -1);
+            return;
+        }
+
+        if (key === "Enter") {
+            this.value += "\n";
+            return;
+        }
+
+        if (key === "Tab") {
+            this.value += "\t";
+            return;
+        }
+
+        if (key.length === 1) {
+            let transformedChar = transformCharacter(key);
+            this.value += transformedChar;
+        }
     });
 
     // ================= TIMER =================
@@ -404,7 +463,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-        if (timeLeft <= 10 && timeLeft > 0 && typeof beepSound !== "undefined") {
+        if (timeLeft <= 10 && timeLeft > 0) {
             beepSound.currentTime = 0;
             beepSound.play();
         }
