@@ -218,7 +218,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // ================= PLAYER =================
     const name = localStorage.getItem("playername") || "Guest";
-    const mobile = localStorage.getItem("playerMobile") || "Not Provided";
+    const mobile = localStorage.getItem("playerphone") || "Not Provided";
 
     const playerNameEl = document.getElementById("playerName");
     if (playerNameEl) playerNameEl.innerText = name;
