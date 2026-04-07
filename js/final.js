@@ -17,11 +17,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const closeGalleryBtn = document.getElementById("closeGalleryBtn");
 
   const eventImages = [
-    "./images/1.jpg",
-    "./images/2.jpg",
-    "./images/3.jpg",
-    "./images/4.jpg",
-    "./images/5.jpg"
+    "./images/1.1.jpg",
+    "./images/1.2.jpg",
+    "./images/1.3.jpg",
+    "./images/1.5.jpg",
+    "./images/1.4.jpg",
+    "./images/1.jpg"
   ];
 
   let currentImageIndex = 0;
