@@ -231,7 +231,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const inputField = document.getElementById("modifiedInput");
 
     let currentLevel = 1;
-    let timeLeft = 900;
+    let timeLeft = 480;
     let completedtime = timeLeft;
     let downloadAttempted = false;
 
